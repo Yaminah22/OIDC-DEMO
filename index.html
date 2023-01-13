@@ -1,124 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-       
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>OIDC Implementation Page</title>
-        <style>
-            body {
-                min-height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #212121;
-                color: white;
-                font-family: 'Courier New', Courier, monospace;
-            }
 
-            #greeting {
-                font-size: 2em;
-                color: white;
-                margin: 1em;
-                text-align: center;
-            }
+<head>
 
-            .details {
-                margin: 1em;
-            }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OIDC Implementation Page</title>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #212121;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-            .details div {
-                margin-bottom: 1em;
-                font-size: 1em;
-                width: 100%;
-                overflow: hidden;
-                overflow-wrap: break-word;
-            }
+        #title {
+            font-size: 2.5em;
+            font-weight: 500;
+            color: white;
+            margin: 1.5em;
+            text-align: center;
+        }
 
-            .menu {
-                display: flex;
-                justify-content: space-between;
-            }
+        #greeting {
+            font-size: 2em;
+            color: white;
+            margin: 1em;
+            text-align: center;
+        }
 
-            .wrapper {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                min-height: 320px;
-                width: 500px;
-                border-radius: 5px;
-                padding: 2em;
-                background-color: #1d1c21;
-            }
+        .details {
+            margin: 1em;
+        }
 
-            .menu button {
-                padding: 1em;
-                border: none;
-                color: white;
-                background-color: #3d4444;
-                cursor: pointer;
-                border-radius: 5px;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="wrapper">
-            <div class="menu">
-                <button onclick="signIn()">Sign In</button>
-                <button onclick="auth.signOut()">Sign Out</button>
-                <button onclick="getUserProfile()">Get User Info</button>
-            </div>
-            <div id="greeting"></div>
-            <div class="details">
-                <div id="email"></div>
-                <div id="lastName"></div>
-                <div id="roles"></div>
-            </div>
+        .details div {
+            margin-bottom: 1em;
+            font-size: 1em;
+            width: 100%;
+            overflow: hidden;
+            overflow-wrap: break-word;
+        }
+
+        .menu {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 320px;
+            width: 80%;
+            border-radius: 5px;
+            padding: 2em;
+            background-color: #1d1c21;
+        }
+
+        .menu button {
+            padding: 1em;
+            border: none;
+            color: white;
+            background-color: #3d4444;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="title">OIDC Demo</div>
+    <div class="wrapper">
+        <div class="menu">
+            <button onclick="signIn()">Sign In</button>
+            <button onclick="signOut()">Sign Out</button>
+            <button onclick="getUserProfile('encrypt')">Get User Info</button>
+            <button onclick="getUserProfile('decrypt')">Decrypt</button>
         </div>
-    </body>
-    <script src="https://unpkg.com/@asgardeo/auth-spa@latest/dist/asgardeo-spa.production.min.js"></script>
-    <script>
-        var serverOrigin = "https://localhost:9443";
-        var clientHost = "http://127.0.0.1:5500/index.html";
-        
-        var auth = AsgardeoAuth.AsgardeoSPAClient.getInstance();
-        auth.initialize({
-            serverOrigin: serverOrigin,
-            clientHost: clientHost,
-            signInRedirectURL: clientHost,
-            signOutRedirectURL: clientHost,
-            clientID: "OfQqU9Jct2O3u3c4Br4qzs6AeVwa",
-            baseUrl: [serverOrigin],
-            scope: [ "openid","profile"],
-            storage: "webWorker"
 
-        });
-        auth.on("sign-in", (response)=>{
-            document.getElementById("greeting").innerHTML = "Hello, " + response.displayName+ "!";
+        <div id="greeting"></div>
+        <div class="details">
+            <div id="name"></div>
+            <div id="email"></div>
+            <div id="mobile"></div>
+            <div id="telephone"></div>
+            <div id="country"></div>
+            <div id="organization"></div>
+            <div id="created_at"></div>
+            <div id="user_id"></div>
+            <div id="resourceType"></div>
+            <div id="roles"></div>
+
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/@asgardeo/auth-spa@latest/dist/asgardeo-spa.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"
+    integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
+<script>
+    var serverOrigin = "https://localhost:9443";
+    var clientHost = "http://127.0.0.1:5500/index.html";
+    var key = window.crypto.getRandomValues(new Uint8Array(12));
+
+
+    var auth = AsgardeoAuth.AsgardeoSPAClient.getInstance();
+    auth.initialize({
+        serverOrigin: serverOrigin,
+        clientHost: clientHost,
+        signInRedirectURL: clientHost,
+        signOutRedirectURL: clientHost,
+        clientID: "OfQqU9Jct2O3u3c4Br4qzs6AeVwa",
+        baseUrl: [serverOrigin],
+        scope: ["openid", "profile"],
+        storage: "webWorker"
+
+    });
+    document.getElementById("greeting").innerHTML = "Not Signed In";
+    if (new URL(window.location.href).searchParams.get("code")) {
+        auth.signIn();
+        document.getElementById("greeting").innerHTML = "Hello! You are now signed IN";
+
+    }
+
+    function signIn() {
+        auth.signIn();
+
+    }
+    function signOut() {
+        auth.signOut();
+    }
+    function getUserProfile(temp) {
+
+        var config = {
+            url: serverOrigin + "/api/identity/user/v1.0/me",
+            method: "GET"
+        }
+        auth.httpRequest(config).then((response) => {
+            var email = response.data.basic["http://wso2.org/claims/emailaddress"];
+            var roles = response.data.basic["http://wso2.org/claims/role"];
+            var organization = response.data.basic["http://wso2.org/claims/organization"];
+            var telephone = response.data.basic["http://wso2.org/claims/telephone"];
+            var country = response.data.basic["http://wso2.org/claims/country"];
+            var created_at = response.data.basic["http://wso2.org/claims/created"];
+            var mobile = response.data.basic["http://wso2.org/claims/mobile"];
+            var user_id = response.data.basic["http://wso2.org/claims/userid"];
+            var resourceType = response.data.basic["http://wso2.org/claims/resourceType"];
+            if (temp == 'decrypt') {
+                document.getElementById("greeting").innerHTML = "***User Details***";
+                document.getElementById("name").innerHTML = "<b>Name:</b>" + response.data.basic["http://wso2.org/claims/givenname"] + " " + response.data.basic["http://wso2.org/claims/lastname"];
+                document.getElementById("email").innerHTML = "<b>Email:</b>" + email;
+                document.getElementById("roles").innerHTML = "<b>Roles:</b>" + roles;
+                document.getElementById("organization").innerHTML = "<b>Organization:</b>" + organization;
+                document.getElementById("telephone").innerHTML = "<b>Phone No:</b>" + telephone;
+                document.getElementById("mobile").innerHTML = "<b>Mobile No:</b>" + mobile;
+                document.getElementById("country").innerHTML = "<b>Country:</b>" + country;
+                document.getElementById("created_at").innerHTML = "<b>Account Created at:</b>" + created_at;
+                document.getElementById("user_id").innerHTML = "<b>User ID:</b>" + user_id;
+                document.getElementById("resourceType").innerHTML = "<b>Account Type:</b>" + resourceType;
+            }
+            else {
+                document.getElementById("greeting").innerHTML = "***User Details***";
+                document.getElementById("name").innerHTML = "<b>Name:</b>" + response.data.basic["http://wso2.org/claims/givenname"] + " " + response.data.basic["http://wso2.org/claims/lastname"];
+                document.getElementById("email").innerHTML = "<b>Email:</b>" + CryptoJS.AES.encrypt(email, toString(key));
+                document.getElementById("roles").innerHTML = "<b>Roles:</b>" + CryptoJS.AES.encrypt(roles, toString(key));
+                document.getElementById("organization").innerHTML = "<b>Organization:</b>" + CryptoJS.AES.encrypt(organization, toString(key));
+                document.getElementById("telephone").innerHTML = "<b>Phone No:</b>" + CryptoJS.AES.encrypt(telephone, toString(key));
+                document.getElementById("mobile").innerHTML = "<b>Mobile No:</b>" + CryptoJS.AES.encrypt(mobile, toString(key));
+                document.getElementById("country").innerHTML = "<b>Country:</b>" + CryptoJS.AES.encrypt(country, toString(key));
+                document.getElementById("created_at").innerHTML = "<b>Account Created at:</b>" + CryptoJS.AES.encrypt(created_at, toString(key));
+                document.getElementById("user_id").innerHTML = "<b>User ID:</b>" + CryptoJS.AES.encrypt(user_id, toString(key));
+                document.getElementById("resourceType").innerHTML = "<b>Account Type:</b>" + CryptoJS.AES.encrypt(resourceType, toString(key));
+            }
+        }).catch(error => {
+            console.error(error);
         })
-        
-        if(new URL(window.location.href).searchParams.get("code")){
-            auth.signIn();
-        }
-        
-        function signIn(){
-            auth.signIn();
-        }
-        function getUserProfile(){
-                var config ={
-                    url: serverOrigin + "/api/identity/user/v1.0/me",
-                    method: "GET"
-                }
-                auth.httpRequest(config).then ((response)=>{
+    }
 
-                    document.getElementById("email").innerHTML = "<b>Email:</b>"+ response.data.basic["http://wso2.org/claims/emailaddress"];
+</script>
 
-
-                }).catch(error=>{
-                    console.error(error);
-                })
-        }
-        
-    </script>
-    </html>
+</html>
