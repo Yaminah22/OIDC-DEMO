@@ -79,8 +79,8 @@
         <div class="menu">
             <button onclick="signIn()">Sign In</button>
             <button onclick="signOut()">Sign Out</button>
-            <button onclick="getUserProfile('encrypt')">Get User Info</button>
-            <button onclick="getUserProfile('decrypt')">Decrypt</button>
+            <button onclick="getUserProfile('encrypt')">Get Encrypted User Info</button>
+            <button onclick="getUserProfile('decrypt')">Get Original User Info</button>
         </div>
 
         <div id="greeting"></div>
@@ -100,7 +100,8 @@
     </div>
 </body>
 <script src="https://unpkg.com/@asgardeo/auth-spa@latest/dist/asgardeo-spa.production.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"
+    integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
 <script>
     var serverOrigin = "https://localhost:9443";
     var clientHost = "http://127.0.0.1:5500/index.html";
